@@ -1,10 +1,12 @@
 name: Login Performance Monitor
 
-on: 
+permissions:
+  contents: write
+
+on:
   schedule:
     - cron: "*/10 * * * *" # Every 10 minutes
   workflow_dispatch:
-
 
 jobs:
   monitor:
@@ -17,7 +19,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: "latest"
-      
+
       - name: Install dependencies
         run: bun install
 
