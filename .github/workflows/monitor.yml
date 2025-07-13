@@ -22,7 +22,7 @@ jobs:
         run: bun install
 
       - name: Run performance monitor
-        run: bun start
+        run: bun run src/index.ts
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
