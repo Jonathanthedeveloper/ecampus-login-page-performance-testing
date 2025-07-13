@@ -5,7 +5,29 @@ const USERNAME = process.env.USERNAME;
 const PASSWORD = process.env.PASSWORD;
 const OUTPUT_FILE = "results.csv";
 
+function getTimeStamp() {
+  return (
+    new Date()
+      .toLocaleString("en-CA", {
+        timeZone: "Africa/Lagos",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+      .replace(", ", "T") + "+01:00"
+  );
+}
+
 async function main() {
+  if (!USERNAME || !PASSWORD) {
+    console.error("Please set USERNAME and PASSWORD environment variables.");
+    process.exit(1);
+  }
+
   const browser = await puppeteer.launch({
     headless: true,
     args: [
@@ -65,7 +87,7 @@ async function main() {
   const totalDuration = dashboardLoadEnd - loginPageStart;
 
   // Results
-  const timestamp = new Date().toISOString();
+  const timestamp = getTimeStamp();
   const results = {
     timestamp,
     loginPageLoadMs: Math.round(loginPageDuration),

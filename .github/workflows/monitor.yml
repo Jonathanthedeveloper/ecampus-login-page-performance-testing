@@ -26,11 +26,12 @@ jobs:
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
+          TZ: Africa/Lagos
 
       - name: Commit and push results
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add results.csv
-          git commit -m "Performance data: $(date)" || exit 0
+          git commit -m "Performance data: $(TZ=Africa/Lagos date)" || exit 0
           git push origin main

@@ -1,22 +1,116 @@
-# School Dashboard Monitor
+# eCampus Login Performance Monitor
 
-A Node.js application that monitors your school dashboard by logging in every 10 minutes to collect performance data and identify peak usage times.
+An automated performance monitoring tool that measures RSU eCampus login page performance at regular intervals using Puppeteer and GitHub Actions.
+
+## Overview
+
+This project monitors the complete login flow performance including:
+
+- Login page loading time
+- Authentication process duration
+- Dashboard loading time
+- Total end-to-end performance
 
 ## Features
 
-- 🤖 Automated login every 10 minutes
-- 📊 Collects response times and user activity data
-- 📁 Stores data in CSV files organized by date
-- 📈 Analysis tools to identify peak times
-- 🔄 Continuous monitoring with error recovery
-- 📸 Optional screenshot capture for debugging
+- ✅ Automated login performance testing
+- ✅ Multi-stage timing measurement
+- ✅ CSV data export for analysis
+- ✅ GitHub Actions automation (every 10 minutes)
+- ✅ Error handling and logging
+- ✅ TypeScript support with Bun runtime
 
-## Prerequisites
+## Performance Metrics
 
-- Node.js (v14 or higher)
-- Chrome/Chromium browser (for Puppeteer)
+The tool measures these key performance indicators:
 
-## Setup
+1. **Login Page Load**: Time to load the initial login form
+2. **Login Process**: Time from form submission to successful authentication
+3. **Dashboard Load**: Time for dashboard to fully load with all data
+4. **Total Duration**: Complete end-to-end user experience time
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh/) runtime
+- Node.js 18+ (for GitHub Actions)
+- Valid RSU eCampus credentials
+
+### Local Development
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/Jonathanthedeveloper/ecampus-login-page-performance-testing.git
+   cd ecampus-login-page-performance-testing
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   bun install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file:
+
+   ```env
+   USERNAME=your_username
+   PASSWORD=your_password
+   ```
+
+4. **Run the monitor**
+   ```bash
+   bun start
+   ```
+
+### GitHub Actions Setup
+
+1. **Add Repository Secrets**
+   Go to Settings → Secrets and variables → Actions:
+
+   - `LOGIN_USERNAME`: Your eCampus username
+   - `LOGIN_PASSWORD`: Your eCampus password
+
+2. **Enable Actions**
+   The workflow will automatically run every 10 minutes and commit results to `results.csv`
+
+## Data Output
+
+### CSV Format
+
+```csv
+timestamp,loginPageLoadMs,loginPageLoadSeconds,loginProcessMs,loginProcessSeconds,dashboardLoadMs,dashboardLoadSeconds,totalMs,totalSeconds,status
+2025-01-15T10:30:00.000Z,2340,2.34,1870,1.87,4230,4.23,8440,8.44,SUCCESS
+```
+
+### Analysis Fields
+
+- **timestamp**: ISO 8601 timestamp
+- **loginPageLoadMs/Seconds**: Login page loading performance
+- **loginProcessMs/Seconds**: Authentication performance
+- **dashboardLoadMs/Seconds**: Dashboard loading performance
+- **totalMs/Seconds**: End-to-end performance
+- **status**: SUCCESS or FAILED with error details
+
+## Project Structure
+
+```
+├── .github/
+│   └── workflows/
+│       └── monitor.yml          # GitHub Actions workflow
+├── src/
+│   └── index.ts                 # Main monitoring script
+├── .env                         # Environment variables (local)
+├── .gitignore                   # Git ignore rules
+├── bun.lockb                    # Bun lock file
+├── package.json                 # Project dependencies
+├── results.csv                  # Performance data output
+└── README.md                    # This file
+```
+
+## Configuration
 
 1. **Install dependencies:**
 
@@ -48,6 +142,28 @@ A Node.js application that monitors your school dashboard by logging in every 10
    - `#login-button` - Login button
    - `#active-users` - Active users counter (optional)
    - `#server-load` - Server load indicator (optional)
+
+### Monitoring Frequency
+
+Edit `.github/workflows/monitor.yml` to change the schedule:
+
+```yaml
+schedule:
+  - cron: "*/10 * * * *" # Every 10 minutes
+  - cron: "0 * * * *" # Every hour
+  - cron: "0 9-17 * * 1-5" # Business hours only
+```
+
+### Timeout Settings
+
+Adjust timeouts in `src/index.ts`:
+
+```typescript
+await page.waitForNavigation({
+  timeout: 60000, // 60 seconds
+  waitUntil: "domcontentloaded",
+});
+```
 
 ## Usage
 
@@ -132,67 +248,77 @@ The analysis script provides:
 - Peak time identification
 - Performance recommendations
 
-## Customization
-
-### Monitoring Interval
-
-Change `LOG_INTERVAL` in `.env`:
-
-- `300000` = 5 minutes
-- `600000` = 10 minutes (default)
-- `900000` = 15 minutes
-
-### Data Collection
-
-Modify the `collectDashboardData()` method in `index.js` to collect additional metrics specific to your dashboard.
-
-### Screenshots
-
-Enable screenshot capture by setting `TAKE_SCREENSHOTS=true` in `.env`.
-
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Login fails**
+1. **Login Failures**
 
-   - Verify CSS selectors match your dashboard
-   - Check credentials in `.env`
-   - Set `HEADLESS=false` to see browser actions
+   - Verify credentials in repository secrets
+   - Check if eCampus site is accessible
+   - Review error messages in Actions logs
 
-2. **Browser crashes**
+2. **Timeout Errors**
 
-   - The monitor automatically reinitializes the browser
-   - Check available system memory
+   - Network latency may require longer timeouts
+   - eCampus server may be experiencing high load
 
-3. **Data not collected**
-   - Verify dashboard elements exist after login
-   - Update selectors for data elements
+3. **GitHub Actions Quota**
+   - Free tier: 2,000 minutes/month
+   - 10-minute intervals use ~1,440 minutes/month
+   - Monitor usage in Settings → Billing
 
-### Debugging
+### Local Debugging
 
-- Set `HEADLESS=false` in `.env` to see browser actions
-- Enable screenshots with `TAKE_SCREENSHOTS=true`
-- Check console output for detailed error messages
+Run with visible browser for debugging:
 
-## Files Structure
-
-```
-├── index.js          # Main monitoring script
-├── analyze.js         # Data analysis script
-├── package.json       # Dependencies and scripts
-├── .env.example       # Environment template
-├── .env              # Your configuration (create this)
-└── dashboard_data_*.csv # Generated data files
+```typescript
+const browser = await puppeteer.launch({
+  headless: false, // Set to false for debugging
+  // ...existing args
+});
 ```
 
-## Security Notes
+## Data Analysis
 
-- Keep your `.env` file secure and never commit it to version control
-- Use environment variables in production
-- Consider using a dedicated monitoring account if available
-- Monitor your school's terms of service regarding automated access
+### Import to Excel/Google Sheets
+
+1. Download `results.csv` from the repository
+2. Import as CSV with comma delimiter
+3. Create charts for performance trends
+
+### Python Analysis Example
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('results.csv')
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+# Plot total performance over time
+plt.figure(figsize=(12, 6))
+plt.plot(df['timestamp'], df['totalSeconds'])
+plt.title('eCampus Login Performance Over Time')
+plt.ylabel('Total Time (seconds)')
+plt.xlabel('Timestamp')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-MIT License - feel free to modify and distribute as needed.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Disclaimer
+
+This tool is for educational and monitoring purposes only. Use responsibly and in accordance with RSU eCampus terms of service.
