@@ -1,2 +1,3 @@
 timestamp,loginPageLoadMs,loginPageLoadSeconds,loginProcessMs,loginProcessSeconds,dashboardLoadMs,dashboardLoadSeconds,totalMs,totalSeconds
 2025-07-13T12:40:06+01:00,11746,11.75,11738,11.74,7749,7.75,31816,31.82
+2025-07-13T12:49:10+01:00,2403,2.40,5731,5.73,11969,11.97,20941,20.94
